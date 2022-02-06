@@ -82,9 +82,11 @@ public struct BarChartRow: View {
 }
 
 struct BarChartRow_Previews: PreviewProvider {
-    static let chartData = ChartData([6, 2, 5, 8, 6])
+    static let chartData = ChartData([6, 0, 5, 8, 6])
     static let chartStyle = ChartStyle(backgroundColor: .white, foregroundColor: .orangeBright)
+    static let chartLabelStyle = ChartLabelStyle()
+
     static var previews: some View {
-        BarChartRow(chartData: chartData, style: chartStyle)
+        BarChartRow(chartData: chartData, chartLabelStyle: chartLabelStyle, style: chartStyle)
     }
 }

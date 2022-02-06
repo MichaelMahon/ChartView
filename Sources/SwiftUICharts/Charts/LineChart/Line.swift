@@ -10,61 +10,18 @@ public struct Line: View {
     @State private var showIndicator: Bool = false
     @State private var touchLocation: CGPoint = .zero
     @State private var showBackground: Bool = true
-<<<<<<< HEAD
-    var curvedLines: Bool = true
-
-	/// Step for plotting through data
-	/// - Returns: X and Y delta between each data point based on data and view's frame
-    var step: CGPoint {
-        return CGPoint.getStep(frame: frame, data: chartData.points)
-    }
-=======
     @State private var didCellAppear: Bool = false
->>>>>>> 2.0.0-beta.2
 
     var curvedLines: Bool = true
     var path: Path {
-<<<<<<< HEAD
-        let points = chartData.points
-
-        if curvedLines {
-            return Path.quadCurvedPathWithPoints(points: points,
-                                                 step: step,
-                                                 globalOffset: nil)
-        }
-
-        return Path.linePathWithPoints(points: points, step: step)
-    }
-    
-	/// Path of linegraph, but also closed at the bottom side
-	/// - Returns: A path for filling representing the data, either curved or jagged
-    var closedPath: Path {
-        let points = chartData.points
-
-        if curvedLines {
-            return Path.quadClosedCurvedPathWithPoints(points: points,
-                                            step: step,
-                                            globalOffset: nil)
-        }
-
-        return Path.closedLinePathWithPoints(points: points, step: step)
-=======
         Path.quadCurvedPathWithPoints(points: chartData.normalisedPoints,
                                       step: CGPoint(x: 1.0, y: 1.0))
->>>>>>> 2.0.0-beta.2
     }
-
-    // see https://stackoverflow.com/a/62370919
-    // This lets geometry be recalculated when device rotates. However it doesn't cover issue of app changing
-    // from full screen to split view. Not possible in SwiftUI? Feedback submitted to apple FB8451194.
-    let orientationChanged = NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)
-        .makeConnectable()
-        .autoconnect()
     
-	/// The content and behavior of the `Line`.
-	/// Draw the background if showing the full line (?) and the `showBackground` option is set. Above that draw the line, and then the data indicator if the graph is currently being touched.
-	/// On appear, set the frame so that the data graph metrics can be calculated. On a drag (touch) gesture, highlight the closest touched data point.
-	/// TODO: explain rotation
+    /// The content and behavior of the `Line`.
+    /// Draw the background if showing the full line (?) and the `showBackground` option is set. Above that draw the line, and then the data indicator if the graph is currently being touched.
+    /// On appear, set the frame so that the data graph metrics can be calculated. On a drag (touch) gesture, highlight the closest touched data point.
+    /// TODO: explain rotation
     public var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -92,7 +49,7 @@ public struct Line: View {
             .onDisappear() {
                 didCellAppear = false
             }
-			
+            
             .gesture(DragGesture()
                 .onChanged({ value in
                     self.touchLocation = value.location
@@ -111,11 +68,10 @@ public struct Line: View {
 }
 
 // MARK: - Private functions
-
 extension Line {
-	/// Calculate point closest to where the user touched
-	/// - Parameter touchLocation: location in view where touched
-	/// - Returns: `CGPoint` of data point on chart
+    /// Calculate point closest to where the user touched
+    /// - Parameter touchLocation: location in view where touched
+    /// - Returns: `CGPoint` of data point on chart
     private func getClosestPointOnPath(geometry: GeometryProxy, touchLocation: CGPoint) -> CGPoint {
         let geometryWidth = geometry.frame(in: .local).width
         let normalisedTouchLocationX = (touchLocation.x / geometryWidth) * CGFloat(chartData.normalisedPoints.count - 1)
@@ -126,8 +82,8 @@ extension Line {
         return denormClosest
     }
 
-//	/// Figure out where closest touch point was
-//	/// - Parameter point: location of data point on graph, near touch location
+//    /// Figure out where closest touch point was
+//    /// - Parameter point: location of data point on graph, near touch location
     private func getClosestDataPoint(geometry: GeometryProxy, touchLocation: CGPoint) {
         let geometryWidth = geometry.frame(in: .local).width
         let index = Int(round((touchLocation.x / geometryWidth) * CGFloat(chartData.points.count - 1)))
@@ -151,4 +107,3 @@ struct Line_Previews: PreviewProvider {
         }
     }
 }
-

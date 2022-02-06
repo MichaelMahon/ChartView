@@ -3,17 +3,6 @@ import SwiftUI
 /// An observable wrapper for an array of data for use in any chart
 public class ChartData: ObservableObject {
     @Published public var data: [(String, Double)] = []
-<<<<<<< HEAD
-
-    var points: [Double] {
-        data.map { $0.1 }
-    }
-
-    var values: [String] {
-        data.map { $0.0 }
-    }
-=======
->>>>>>> 2.0.0-beta.2
 
     var points: [Double] {
         data.map { $0.1 }

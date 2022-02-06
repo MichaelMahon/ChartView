@@ -24,7 +24,8 @@ public struct BarChartCell: View {
 	/// Animated when first displayed, using the `firstDisplay` variable, with an increasing delay through the data set.
     public var body: some View {
         BarChartCellShape(value: didCellAppear ? value : 0.0)
-        .fill(gradientColor.linearGradient(from: .bottom, to: .top))        .onAppear {
+            .fill(value > 0 ? gradientColor.linearGradient(from: .bottom, to: .top) : ColorGradient(.clear, .clear).linearGradient(from: .bottom, to: .top))
+        .onAppear {
             self.didCellAppear = true
         }
         .onDisappear {
@@ -40,6 +41,7 @@ struct BarChartCell_Previews: PreviewProvider {
         Group {
             Group {
                 BarChartCell(value: 0, gradientColor: ColorGradient.greenRed, touchLocation: CGFloat())
+                    .padding()
 
                 BarChartCell(value: 0.5, gradientColor: ColorGradient.greenRed, touchLocation: CGFloat())
                 BarChartCell(value: 0.75, gradientColor: ColorGradient.whiteBlack, touchLocation: CGFloat())
