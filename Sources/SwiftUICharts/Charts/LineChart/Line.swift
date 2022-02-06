@@ -3,15 +3,14 @@ import SwiftUI
 /// A single line of data, a view in a `LineChart`
 public struct Line: View {
     @EnvironmentObject var chartValue: ChartValue
-    @State private var frame: CGRect = .zero
     @ObservedObject var chartData: ChartData
 
     var style: ChartStyle
 
     @State private var showIndicator: Bool = false
     @State private var touchLocation: CGPoint = .zero
-    @State private var showFull: Bool = false
     @State private var showBackground: Bool = true
+<<<<<<< HEAD
     var curvedLines: Bool = true
 
 	/// Step for plotting through data
@@ -19,10 +18,13 @@ public struct Line: View {
     var step: CGPoint {
         return CGPoint.getStep(frame: frame, data: chartData.points)
     }
+=======
+    @State private var didCellAppear: Bool = false
+>>>>>>> 2.0.0-beta.2
 
-	/// Path of line graph
-	/// - Returns: A path for stroking representing the data, either curved or jagged.
+    var curvedLines: Bool = true
     var path: Path {
+<<<<<<< HEAD
         let points = chartData.points
 
         if curvedLines {
@@ -46,6 +48,10 @@ public struct Line: View {
         }
 
         return Path.closedLinePathWithPoints(points: points, step: step)
+=======
+        Path.quadCurvedPathWithPoints(points: chartData.normalisedPoints,
+                                      step: CGPoint(x: 1.0, y: 1.0))
+>>>>>>> 2.0.0-beta.2
     }
 
     // see https://stackoverflow.com/a/62370919
@@ -62,34 +68,36 @@ public struct Line: View {
     public var body: some View {
         GeometryReader { geometry in
             ZStack {
-                if self.showFull && self.showBackground {
-                    self.getBackgroundPathView()
+                if self.didCellAppear && self.showBackground {
+                    LineBackgroundShapeView(chartData: chartData,
+                                            geometry: geometry,
+                                            style: style)
                 }
-                self.getLinePathView()
+                LineShapeView(chartData: chartData,
+                              geometry: geometry,
+                              style: style,
+                              trimTo: didCellAppear ? 1.0 : 0.0)
+                    .animation(.easeIn)
                 if self.showIndicator {
                     IndicatorPoint()
-                        .position(self.getClosestPointOnPath(touchLocation: self.touchLocation))
+                        .position(self.getClosestPointOnPath(geometry: geometry,
+                                                             touchLocation: self.touchLocation))
                         .rotationEffect(.degrees(180), anchor: .center)
                         .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
                 }
             }
             .onAppear {
-                self.frame = geometry.frame(in: .local)
-
+                didCellAppear = true
             }
-			.onReceive(orientationChanged) { _ in
-				// When we receive notification here, the geometry is still the old value
-				// so delay evaluation to get the new frame!
-				DispatchQueue.main.async {
-					self.frame = geometry.frame(in: .local)	// recalculate layout with new frame
-				}
-			}
+            .onDisappear() {
+                didCellAppear = false
+            }
 			
             .gesture(DragGesture()
                 .onChanged({ value in
                     self.touchLocation = value.location
                     self.showIndicator = true
-                    self.getClosestDataPoint(point: self.getClosestPointOnPath(touchLocation: value.location))
+                    self.getClosestDataPoint(geometry: geometry, touchLocation: value.location)
                     self.chartValue.interactionInProgress = true
                 })
                 .onEnded({ value in
@@ -105,79 +113,42 @@ public struct Line: View {
 // MARK: - Private functions
 
 extension Line {
-
 	/// Calculate point closest to where the user touched
 	/// - Parameter touchLocation: location in view where touched
 	/// - Returns: `CGPoint` of data point on chart
-    private func getClosestPointOnPath(touchLocation: CGPoint) -> CGPoint {
-        let closest = self.path.point(to: touchLocation.x)
-        return closest
+    private func getClosestPointOnPath(geometry: GeometryProxy, touchLocation: CGPoint) -> CGPoint {
+        let geometryWidth = geometry.frame(in: .local).width
+        let normalisedTouchLocationX = (touchLocation.x / geometryWidth) * CGFloat(chartData.normalisedPoints.count - 1)
+        let closest = self.path.point(to: normalisedTouchLocationX)
+        var denormClosest = closest.denormalize(with: geometry)
+        denormClosest.x = denormClosest.x / CGFloat(chartData.normalisedPoints.count - 1)
+        denormClosest.y = denormClosest.y / CGFloat(chartData.normalisedRange)
+        return denormClosest
     }
 
-	/// Figure out where closest touch point was
-	/// - Parameter point: location of data point on graph, near touch location
-    private func getClosestDataPoint(point: CGPoint) {
-        let index = Int(round((point.x)/step.x))
+//	/// Figure out where closest touch point was
+//	/// - Parameter point: location of data point on graph, near touch location
+    private func getClosestDataPoint(geometry: GeometryProxy, touchLocation: CGPoint) {
+        let geometryWidth = geometry.frame(in: .local).width
+        let index = Int(round((touchLocation.x / geometryWidth) * CGFloat(chartData.points.count - 1)))
         if (index >= 0 && index < self.chartData.data.count){
             self.chartValue.currentValue = self.chartData.points[index]
         }
     }
-
-	/// Get the view representing the filled in background below the chart, filled with the foreground color's gradient
-	///
-	/// TODO: explain rotations
-	/// - Returns: SwiftUI `View`
-    private func getBackgroundPathView() -> some View {
-        self.closedPath
-            .fill(LinearGradient(gradient: Gradient(colors: [
-                                                        style.foregroundColor.first?.startColor ?? .white,
-                                                        style.foregroundColor.first?.endColor ?? .white,
-                                                        .clear]),
-                                 startPoint: .bottom,
-                                 endPoint: .top))
-            .rotationEffect(.degrees(180), anchor: .center)
-            .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
-            .opacity(0.2)
-            .transition(.opacity)
-            .animation(.easeIn(duration: 1.6))
-    }
-
-	/// Get the view representing the line stroked in the `foregroundColor`
-	///
-	/// TODO: Explain how `showFull` works
-	/// TODO: explain rotations
-	/// - Returns: SwiftUI `View`
-    private func getLinePathView() -> some View {
-        self.path
-            .trim(from: 0, to: self.showFull ? 1:0)
-            .stroke(LinearGradient(gradient: style.foregroundColor.first?.gradient ?? ColorGradient.orangeBright.gradient,
-                                   startPoint: .leading,
-                                   endPoint: .trailing),
-                    style: StrokeStyle(lineWidth: 3, lineJoin: .round))
-            .rotationEffect(.degrees(180), anchor: .center)
-            .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
-            .animation(Animation.easeOut(duration: 1.2))
-            .onAppear {
-                self.showFull = true
-            }
-            .onDisappear {
-                self.showFull = false
-            }
-            .drawingGroup()
-    }
 }
 
 struct Line_Previews: PreviewProvider {
+    /// Predefined style, black over white, for preview
+    static let blackLineStyle = ChartStyle(backgroundColor: ColorGradient(.white), foregroundColor: ColorGradient(.black))
+
+    /// Predefined style red over white, for preview
+    static let redLineStyle = ChartStyle(backgroundColor: .whiteBlack, foregroundColor: ColorGradient(.red))
+
     static var previews: some View {
         Group {
-            Line(chartData:  ChartData([8, 23, 32, 7, 23, 43]), style: blackLineStyle)
+            Line(chartData:  ChartData([8, 23, 32, 7, 23, -4]), style: blackLineStyle)
             Line(chartData:  ChartData([8, 23, 32, 7, 23, 43]), style: redLineStyle)
         }
     }
 }
 
-/// Predefined style, black over white, for preview
-private let blackLineStyle = ChartStyle(backgroundColor: ColorGradient(.white), foregroundColor: ColorGradient(.black))
-
-/// Predefined stylem red over white, for preview
-private let redLineStyle = ChartStyle(backgroundColor: .whiteBlack, foregroundColor: ColorGradient(.red))
