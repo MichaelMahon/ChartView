@@ -4,6 +4,7 @@ import SwiftUI
 public struct BarChartRow: View {
     @EnvironmentObject var chartValue: ChartValue
     @ObservedObject var chartData: ChartData
+    @ObservedObject var chartLabelStyle: ChartLabelStyle
     @State private var touchLocation: CGFloat = -1.0
 
     enum Constant {
@@ -29,14 +30,19 @@ public struct BarChartRow: View {
             HStack(alignment: .bottom,
                    spacing: (geometry.frame(in: .local).width - Constant.spacing) / CGFloat(self.chartData.data.count * 3)) {
                     ForEach(0..<self.chartData.data.count, id: \.self) { index in
-                        BarChartCell(value: self.normalizedValue(index: index),
-                                     index: index,
-                                     width: Float(geometry.frame(in: .local).width - Constant.spacing),
-                                     numberOfDataPoints: self.chartData.data.count,
-                                     gradientColor: self.style.foregroundColor.rotate(for: index),
-                                     touchLocation: self.touchLocation)
-                            .scaleEffect(self.getScaleSize(touchLocation: self.touchLocation, index: index), anchor: .bottom)
-                            .animation(Animation.easeIn(duration: 0.2))
+                        VStack {
+                            BarChartCell(value: self.normalizedValue(index: index),
+                                         index: index,
+                                         width: Float(geometry.frame(in: .local).width - Constant.spacing),
+                                         numberOfDataPoints: self.chartData.data.count,
+                                         gradientColor: self.style.foregroundColor.rotate(for: index),
+                                         touchLocation: self.touchLocation)
+                                .scaleEffect(self.getScaleSize(touchLocation: self.touchLocation, index: index), anchor: .bottom)
+                                .animation(Animation.easeIn(duration: 0.2))
+                            Text(chartData.values[index])
+                                .foregroundColor(chartLabelStyle.labelColor)
+                                .font(chartLabelStyle.labelFont)
+                        }
                     }
 //                   .drawingGroup()
             }
