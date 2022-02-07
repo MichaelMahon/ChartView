@@ -7,13 +7,16 @@ public struct BarChart: View, ChartBase {
     @EnvironmentObject var data: ChartData
     @EnvironmentObject var style: ChartStyle
     @EnvironmentObject var chartLabelStyle: ChartLabelStyle
+    @State var interactionEnabled: Bool
 
 	/// The content and behavior of the `BarChart`.
 	///
 	///
     public var body: some View {
-        BarChartRow(chartData: data, chartLabelStyle: chartLabelStyle, style: style)
+        BarChartRow(chartData: data, chartLabelStyle: chartLabelStyle, interactionEnabled: interactionEnabled, style: style)
     }
 
-    public init() {}
+    public init(interactionEnabled: Bool = true) {
+        self.interactionEnabled = interactionEnabled
+    }
 }

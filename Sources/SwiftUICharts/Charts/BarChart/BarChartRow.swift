@@ -6,6 +6,7 @@ public struct BarChartRow: View {
     @ObservedObject var chartData: ChartData
     @ObservedObject var chartLabelStyle: ChartLabelStyle
     @State private var touchLocation: CGFloat = -1.0
+    @State var interactionEnabled: Bool = true
 
     var style: ChartStyle
     
@@ -29,10 +30,11 @@ public struct BarChartRow: View {
                         VStack {
                             BarChartCell(value: chartData.normalisedPoints[index],
                                      index: index,
+                                         interactionEnabled: interactionEnabled,
                                      gradientColor: self.style.foregroundColor.rotate(for: index),
                                      touchLocation: self.touchLocation)
                             .scaleEffect(self.getScaleSize(touchLocation: self.touchLocation, index: index), anchor: .bottom)
-                            .animation(Animation.easeIn(duration: 0.2))
+                            .animation(Animation.easeIn(duration: interactionEnabled ? 0.2 : 0.0))
                             Text(chartData.values[index])
                                 .foregroundColor(chartLabelStyle.labelColor)
                                 .font(chartLabelStyle.labelFont)
@@ -42,19 +44,19 @@ public struct BarChartRow: View {
             }
             .frame(maxHeight: chartData.isInNegativeDomain ? geometry.size.height / 2 : geometry.size.height)
             .gesture(DragGesture()
-                .onChanged({ value in
-                    let width = geometry.frame(in: .local).width
-                    self.touchLocation = value.location.x/width
-                    if let currentValue = self.getCurrentValue(width: width) {
-                        self.chartValue.currentValue = currentValue
-                        self.chartValue.interactionInProgress = true
-                    }
-                })
-                .onEnded({ value in
-                    self.chartValue.interactionInProgress = false
-                    self.touchLocation = -1
-                })
-            )
+                        .onChanged({ value in
+                            let width = geometry.frame(in: .local).width
+                            self.touchLocation = value.location.x/width
+                            if let currentValue = self.getCurrentValue(width: width) {
+                                self.chartValue.currentValue = currentValue
+                                self.chartValue.interactionInProgress = true
+                            }
+                        })
+                        .onEnded({ value in
+                            self.chartValue.interactionInProgress = false
+                            self.touchLocation = -1
+                        }))
+            .allowsHitTesting(interactionEnabled)
         }
     }
 
@@ -87,6 +89,6 @@ struct BarChartRow_Previews: PreviewProvider {
     static let chartLabelStyle = ChartLabelStyle()
 
     static var previews: some View {
-        BarChartRow(chartData: chartData, chartLabelStyle: chartLabelStyle, style: chartStyle)
+        BarChartRow(chartData: chartData, chartLabelStyle: chartLabelStyle, interactionEnabled: false, style: chartStyle)
     }
 }

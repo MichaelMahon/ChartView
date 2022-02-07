@@ -6,14 +6,17 @@ public struct BarChartCell: View {
     var index: Int = 0
     var gradientColor: ColorGradient
     var touchLocation: CGFloat
+    var interactionEnabled: Bool = false
 
     @State private var didCellAppear: Bool = false
 
     public init( value: Double,
                  index: Int = 0,
+                 interactionEnabled: Bool = true,
                  gradientColor: ColorGradient,
                  touchLocation: CGFloat) {
         self.value = value
+        self.interactionEnabled = interactionEnabled
         self.index = index
         self.gradientColor = gradientColor
         self.touchLocation = touchLocation
@@ -32,7 +35,7 @@ public struct BarChartCell: View {
             self.didCellAppear = false
         }
         .transition(.slide)
-        .animation(Animation.spring().delay(self.touchLocation < 0 || !didCellAppear ? Double(self.index) * 0.04 : 0))
+        .animation(interactionEnabled ? Animation.spring().delay(self.touchLocation < 0 || !didCellAppear ? Double(self.index) * 0.04 : 0) : .none)
     }
 }
 
