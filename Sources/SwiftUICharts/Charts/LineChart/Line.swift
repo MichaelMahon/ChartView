@@ -11,8 +11,10 @@ public struct Line: View {
     @State private var touchLocation: CGPoint = .zero
     @State private var showBackground: Bool = true
     @State private var didCellAppear: Bool = false
+    @State var interactionEnabled: Bool = true
 
     var curvedLines: Bool = true
+    
     var path: Path {
         Path.quadCurvedPathWithPoints(points: chartData.normalisedPoints,
                                       step: CGPoint(x: 1.0, y: 1.0))
@@ -25,7 +27,7 @@ public struct Line: View {
     public var body: some View {
         GeometryReader { geometry in
             ZStack {
-                if self.didCellAppear && self.showBackground {
+                if self.didCellAppear && self.style.showBackground {
                     LineBackgroundShapeView(chartData: chartData,
                                             geometry: geometry,
                                             style: style)
@@ -34,7 +36,7 @@ public struct Line: View {
                               geometry: geometry,
                               style: style,
                               trimTo: didCellAppear ? 1.0 : 0.0)
-                    .animation(.easeIn)
+                    .animation(interactionEnabled ? .easeIn : .none)
                 if self.showIndicator {
                     IndicatorPoint()
                         .position(self.getClosestPointOnPath(geometry: geometry,
@@ -63,6 +65,7 @@ public struct Line: View {
                     self.chartValue.interactionInProgress = false
                 })
             )
+            .allowsHitTesting(interactionEnabled)
         }
     }
 }
@@ -95,15 +98,15 @@ extension Line {
 
 struct Line_Previews: PreviewProvider {
     /// Predefined style, black over white, for preview
-    static let blackLineStyle = ChartStyle(backgroundColor: ColorGradient(.white), foregroundColor: ColorGradient(.black))
+    static let blackLineStyle = ChartStyle(backgroundColor: ColorGradient(.white), foregroundColor: ColorGradient(.black), showBackground: false)
 
     /// Predefined style red over white, for preview
-    static let redLineStyle = ChartStyle(backgroundColor: .whiteBlack, foregroundColor: ColorGradient(.red))
+    static let redLineStyle = ChartStyle(backgroundColor: .whiteBlack, foregroundColor: ColorGradient(.red), showBackground: false)
 
     static var previews: some View {
-        Group {
-            Line(chartData:  ChartData([8, 23, 32, 7, 23, -4]), style: blackLineStyle)
-            Line(chartData:  ChartData([8, 23, 32, 7, 23, 43]), style: redLineStyle)
+        ZStack {
+            Line(chartData:  ChartData([0, 0, 0, 1, 1, 3], globalMaxY: 4.0), style: blackLineStyle)
+            Line(chartData:  ChartData([4, 1, 0, 1, 1, 3]), style: redLineStyle)
         }
     }
 }

@@ -6,7 +6,7 @@ public struct BarChartCell: View {
     var index: Int = 0
     var gradientColor: ColorGradient
     var touchLocation: CGFloat
-    var interactionEnabled: Bool = false
+    var interactionEnabled: Bool = true
 
     @State private var didCellAppear: Bool = false
 

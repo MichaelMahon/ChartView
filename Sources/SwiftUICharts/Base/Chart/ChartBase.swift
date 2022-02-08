@@ -4,3 +4,7 @@ import SwiftUI
 public protocol ChartBase {
     var chartData: ChartData { get }
 }
+
+public protocol MultiLineChartBase {
+    var multiLineChartData: MultiLineChartData { get }
+}
