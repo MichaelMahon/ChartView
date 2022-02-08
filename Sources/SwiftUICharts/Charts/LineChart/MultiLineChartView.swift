@@ -61,7 +61,7 @@ struct MultiLineChartView_Previews: PreviewProvider {
     static let blueLineStyle = ChartStyle(backgroundColor: .whiteBlack, foregroundColor: ColorGradient(.blue), showBackground: false)
     //static let multiLineChart = MultiLineChartData(chartDataSets: [ChartDataSet(data: ChartData([0,0,0,1], globalMaxY: 100), style: redLineStyle)])
     
-    static let secondaryDataSet = ChartData([("J", 15.0), ("F", 16.0)], globalMaxY: 35, scaleFactor: 0.48, expectedPointCount: 12)
+    static let secondaryDataSet = ChartData([("J", 15.0), ("F", 16.0)], scaleFactor: 0.48, expectedPointCount: 12)
     static let primaryDataSet = ChartData([("J", 0.0), ("F", 0.0), ("M", 0.0), ("A", 0.0), ("M", 0.0), ("J", 0.0), ("J", 0.0), ("A", 0.0), ("S", 0.0), ("O", 4.0), ("N", 22.0), ("D", 35.0)])
     
     static let multiLineChart = MultiLineChartData(chartDataSets: [ChartDataSet(data: secondaryDataSet, style: blueLineStyle), ChartDataSet(data: primaryDataSet, style: redLineStyle)])

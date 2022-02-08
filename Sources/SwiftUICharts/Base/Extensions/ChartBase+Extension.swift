@@ -12,9 +12,8 @@ extension View where Self: ChartBase {
             .environmentObject(ChartValue())
     }
 
-    public func data(_ data: [(String, Double)], _ max: CGFloat? = nil) -> some View {
+    public func data(_ data: [(String, Double)]) -> some View {
         chartData.data = data
-        chartData.globalMaxY = max
         return self
             .environmentObject(chartData)
             .environmentObject(ChartValue())
