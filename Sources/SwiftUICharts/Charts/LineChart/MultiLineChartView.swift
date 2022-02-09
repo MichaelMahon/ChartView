@@ -32,18 +32,33 @@ struct MultiLineChartView: View {
     /// TODO: explain rotation
     public var body: some View {
         GeometryReader { geometry in
-            ZStack {
-                ForEach(multiLineChart.chartDataSets, id:\.id) { chart in
-                    if self.didCellAppear && chart.style.showBackground {
-                        LineBackgroundShapeView(chartData: chart.data,
-                                                geometry: geometry,
-                                                style: chart.style)
+            ForEach(multiLineChart.chartDataSets, id:\.id) { chart in
+                VStack {
+                    ZStack {
+                        if self.didCellAppear && chart.style.showBackground {
+                            LineBackgroundShapeView(chartData: chart.data,
+                                                    geometry: geometry,
+                                                    style: chart.style)
+                        }
+                        LineShapeView(chartData: chart.data,
+                                      geometry: geometry,
+                                      style: chart.style,
+                                      trimTo: didCellAppear ? 1.0 : 0.0)
+                            .animation(interactionEnabled ? .easeIn : .none)
                     }
-                    LineShapeView(chartData: chart.data,
-                                  geometry: geometry,
-                                  style: chart.style,
-                                  trimTo: didCellAppear ? 1.0 : 0.0)
-                        .animation(interactionEnabled ? .easeIn : .none)
+                    HStack {
+                        ForEach(0..<chart.data.values.count) { index in
+                            if index % (chart.data.values.count > 12 ? 3 : 1) == 0 {
+                                if #available(iOS 14.0, *) {
+                                    Text(chart.data.values[index])
+                                        .font(.caption2)
+                                        .foregroundColor(chart.data.showLabels ? Color(UIColor.label) : .clear)
+                                } else {
+                                    // Fallback on earlier versions
+                                }
+                            }
+                        }.frame(maxWidth: .infinity)
+                    }
                 }
             }
             .onAppear {
@@ -62,9 +77,9 @@ struct MultiLineChartView_Previews: PreviewProvider {
     //static let multiLineChart = MultiLineChartData(chartDataSets: [ChartDataSet(data: ChartData([0,0,0,1], globalMaxY: 100), style: redLineStyle)])
     
     static let secondaryDataSet = ChartData([("J", 15.0), ("F", 16.0)], scaleFactor: 0.48, expectedPointCount: 12)
-    static let primaryDataSet = ChartData([("J", 0.0), ("F", 0.0), ("M", 0.0), ("A", 0.0), ("M", 0.0), ("J", 0.0), ("J", 0.0), ("A", 0.0), ("S", 0.0), ("O", 4.0), ("N", 22.0), ("D", 35.0)])
+    static let primaryDataSet = ChartData([("J", 0.0), ("F", 0.0), ("M", 0.0), ("A", 0.0), ("M", 0.0), ("J", 0.0), ("J", 0.0), ("A", 0.0), ("S", 0.0), ("O", 4.0), ("N", 22.0), ("D", 35.0)], showLabels: true)
     
-    static let multiLineChart = MultiLineChartData(chartDataSets: [ChartDataSet(data: secondaryDataSet, style: blueLineStyle), ChartDataSet(data: primaryDataSet, style: redLineStyle)])
+    static let multiLineChart = MultiLineChartData(chartDataSets: [ChartDataSet(data: primaryDataSet, style: redLineStyle), ChartDataSet(data: secondaryDataSet, style: blueLineStyle)])
     
     
     static var previews: some View {

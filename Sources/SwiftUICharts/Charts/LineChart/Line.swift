@@ -105,8 +105,7 @@ struct Line_Previews: PreviewProvider {
 
     static var previews: some View {
         ZStack {
-            Line(chartData:  ChartData([0, 0, 0, 1, 1, 3]), style: blackLineStyle)
-            Line(chartData:  ChartData([4, 1, 0, 1, 1, 3]), style: redLineStyle)
+            Line(chartData:  ChartData([("test", 1), ("test", 2), ("test", 3), ("test", 3), ("test", 3)]), style: blackLineStyle)
         }
     }
 }
