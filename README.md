@@ -1,4 +1,4 @@
-# SwiftUICharts
+# SwiftUICharts ---
 
 Swift package for displaying charts effortlessly.
 
